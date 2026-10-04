@@ -181,7 +181,11 @@ async function handleApi(req, res, ip) {
       return send(res, r.status, r.body, r.headers);
     } catch (e) {
       const status = e instanceof HttpError ? e.status : 500;
-      return send(res, status, JSON.stringify({ error: e instanceof HttpError ? e.message : 'Something went wrong' }), json);
+      // Refused uploads may still be streaming: close the connection instead of draining the body
+      const closing = status === 413 ? { Connection: 'close' } : {};
+      const bytes = send(res, status, JSON.stringify({ error: e instanceof HttpError ? e.message : 'Something went wrong' }), { ...json, ...closing });
+      if (status === 413) res.on('finish', () => req.socket.destroy());
+      return bytes;
     }
   }
   return send(res, 404, JSON.stringify({ error: 'Not found' }), json);

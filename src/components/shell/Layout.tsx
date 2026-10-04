@@ -27,6 +27,21 @@ export default function Layout() {
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
 
+  // Warm the editor (Monaco, ~2.7 MB) once the dashboard is idle so the first tool opens instantly (NFR-1)
+  useEffect(() => {
+    // Start only after a quiet period, so a fast first click never competes with the warm-up
+    let idle = 0;
+    const warm = () => void import('../tool/MonacoEditors');
+    const timer = setTimeout(() => {
+      if ('requestIdleCallback' in window) idle = window.requestIdleCallback(warm, { timeout: 3000 });
+      else warm();
+    }, 2500);
+    return () => {
+      clearTimeout(timer);
+      if (idle) window.cancelIdleCallback(idle);
+    };
+  }, []);
+
   // Global Ctrl/Cmd+K (FR-C5)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

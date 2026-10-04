@@ -8,7 +8,7 @@ import { useAction } from '../../components/tool/useAction';
 import { Segmented, TextInput } from '../../components/ui/controls';
 import { hmac, type HmacHash } from '../../lib/crypto/hmac';
 import { toBase64, toHex, type KeyEncoding } from '../../lib/bytes';
-import { normaliseExpected } from '../../lib/crypto/hash';
+import { matchesExpected } from '../../lib/crypto/hash';
 
 export default function HmacTool() {
   const [message, setMessage] = useState('');
@@ -28,8 +28,8 @@ export default function HmacTool() {
     return () => clearTimeout(t);
   }, [message, key, keyEnc, hash, run]);
 
-  const exp = normaliseExpected(expected);
-  const match = mac && exp ? toHex(mac) === exp || toBase64(mac).toLowerCase() === exp || toBase64(mac, true, false).toLowerCase() === exp : null;
+  const exp = expected.trim();
+  const match = mac && exp ? matchesExpected(mac, expected) : null;
 
   return (
     <ToolShell

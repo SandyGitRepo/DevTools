@@ -7,3 +7,5 @@ coverage/
 public/pdfjs/
 # Local hook output (written outside the project by a desktop tool)
 *SandeepEducation*
+# Test runs (npm run test:all); regenerate rather than commit
+test-evidence/*/

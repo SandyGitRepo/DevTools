@@ -57,8 +57,8 @@ function readBody(req, limit) {
   return new Promise((resolve, reject) => {
     const declared = Number(req.headers['content-length'] || 0);
     if (declared > limit) {
+      // Do not read the body at all; the caller replies 413 and closes the connection
       reject(new HttpError(413, 'File is larger than the 100 MB limit'));
-      req.resume();
       return;
     }
     const chunks = [];

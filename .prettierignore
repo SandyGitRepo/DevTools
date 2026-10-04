@@ -5,3 +5,4 @@ docs/requirements.md
 *.pem
 public/pdfjs
 content/**/*.md
+test-evidence

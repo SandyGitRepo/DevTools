@@ -3,7 +3,10 @@ export function unicodeEscape(text: string, opts: { all?: boolean; braces?: bool
   let out = '';
   for (const ch of text) {
     const cp = ch.codePointAt(0)!;
-    if (!opts.all && cp >= 0x20 && cp < 0x7f) {
+    // A literal backslash must itself be escaped, or unescaping would misread what follows it
+    if (ch === '\\' && !opts.all) {
+      out += '\\\\';
+    } else if (!opts.all && cp >= 0x20 && cp < 0x7f) {
       out += ch;
     } else if (opts.braces && cp > 0xffff) {
       out += `\\u{${cp.toString(16).toUpperCase()}}`;

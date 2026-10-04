@@ -8,7 +8,7 @@ import { ActionBar, TwoPane } from '../../components/tool/layout';
 import { useAction } from '../../components/tool/useAction';
 import { useHandoff } from '../../components/tool/useHandoff';
 import { Segmented, TextInput } from '../../components/ui/controls';
-import { hashAlgorithms, hashBytes, hashFile, normaliseExpected, type HashAlgorithm } from '../../lib/crypto/hash';
+import { hashAlgorithms, hashBytes, hashFile, matchesExpected, type HashAlgorithm } from '../../lib/crypto/hash';
 import { toBase64, toHex, utf8Encode } from '../../lib/bytes';
 import { copyText, formatBytes } from '../../lib/files';
 
@@ -45,8 +45,8 @@ export default function HashTool() {
   };
 
   const fmt = (b: Uint8Array) => (encoding === 'base64' ? toBase64(b) : encoding === 'HEX' ? toHex(b).toUpperCase() : toHex(b));
-  const exp = normaliseExpected(expected);
-  const matchOf = (b: Uint8Array) => !!exp && (toHex(b) === exp || toBase64(b).toLowerCase() === exp || toBase64(b, false, false).toLowerCase() === exp);
+  const exp = expected.trim();
+  const matchOf = (b: Uint8Array) => matchesExpected(b, expected);
   const anyMatch = results && exp ? Object.values(results).some(matchOf) : false;
 
   return (
@@ -68,7 +68,7 @@ export default function HashTool() {
           <li>
             All algorithms are computed at once. Text is hashed as UTF-8. Files are streamed in 4 MB chunks, so multi-GB files work without loading into memory.
           </li>
-          <li>Paste an expected checksum (hex or Base64, any case, with or without colons) to verify a download — the matching row lights up.</li>
+          <li>Paste an expected checksum (hex in any case with or without colons, or Base64) to verify a download — the matching row lights up.</li>
           <li>
             MD5, SHA-1 and CRC32 are <b>not secure</b> against tampering; use them only to compare with legacy systems.
           </li>

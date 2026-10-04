@@ -19,6 +19,7 @@ export default function XmlTool() {
   const { error, status, run, reset, setError } = useAction();
   useHandoff(setInput);
 
+  // xml-formatter silently repairs broken markup (e.g. <a><b>x</a></b>), so check with the browser parser first
   const wellFormed = () => {
     const err = checkWellFormed(input);
     if (err) throw Object.assign(new Error(err.message), { jsonLine: err.line, jsonColumn: err.column });
@@ -65,11 +66,32 @@ export default function XmlTool() {
           type="button"
           className="hud-btn hud-btn-accent"
           disabled={!input}
-          onClick={() => run(() => setOutput(formatXml(input, indent === 'tab' ? '\t' : ' '.repeat(+indent))), { success: 'Formatted' })}
+          onClick={() =>
+            run(
+              () => {
+                wellFormed();
+                setOutput(formatXml(input, indent === 'tab' ? '\t' : ' '.repeat(+indent)));
+              },
+              { success: 'Formatted' },
+            )
+          }
         >
           <Play size={15} aria-hidden="true" /> Format
         </button>
-        <button type="button" className="hud-btn" disabled={!input} onClick={() => run(() => setOutput(minifyXml(input)), { success: 'Minified' })}>
+        <button
+          type="button"
+          className="hud-btn"
+          disabled={!input}
+          onClick={() =>
+            run(
+              () => {
+                wellFormed();
+                setOutput(minifyXml(input));
+              },
+              { success: 'Minified' },
+            )
+          }
+        >
           <Minimize2 size={15} aria-hidden="true" /> Minify
         </button>
         <button type="button" className="hud-btn" disabled={!input} onClick={() => run(wellFormed, { success: 'Well-formed XML' })}>

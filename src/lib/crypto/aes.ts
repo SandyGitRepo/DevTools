@@ -59,11 +59,12 @@ export async function aesDecrypt(packedB64: string, mode: AesMode, size: AesKeyS
   let offset = 0;
   let key: CryptoKey;
   if (src.kind === 'passphrase') {
-    if (data.length < 16 + ivLen + 1) throw new Error('Input is too short to contain salt + IV + ciphertext');
+    // Ciphertext may be empty (CTR mode, empty plaintext)
+    if (data.length < 16 + ivLen) throw new Error('Input is too short to contain salt + IV + ciphertext');
     key = await deriveKey(src.passphrase, data.subarray(0, 16), mode, size, src.iterations ?? PBKDF2_ITERATIONS);
     offset = 16;
   } else {
-    if (data.length < ivLen + 1) throw new Error('Input is too short to contain IV + ciphertext');
+    if (data.length < ivLen) throw new Error('Input is too short to contain IV + ciphertext');
     key = await importRaw(src.keyHex, mode, size);
   }
   const iv = data.subarray(offset, offset + ivLen);

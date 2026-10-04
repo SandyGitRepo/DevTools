@@ -42,7 +42,9 @@ export function decompress(
     chunks.push(chunk);
   };
   const stream = fmt === 'gzip' ? new Gunzip(ondata) : fmt === 'zlib' ? new Unzlib(ondata) : new Inflate(ondata);
-  const step = 64 * 1024;
+  // The cap is only checked between pushes and deflate expands up to ~1032x, so size each push to keep
+  // the overshoot within about one cap. A 64 KB push could otherwise inflate ~64 MB past a 1 MB cap.
+  const step = Math.min(64 * 1024, Math.max(1024, Math.floor(cap / 1032)));
   try {
     for (let i = 0; i < data.length && !aborted; i += step) {
       stream.push(data.subarray(i, i + step), i + step >= data.length);

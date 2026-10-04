@@ -157,7 +157,7 @@ describe('FR-D3 Excel + SEC-4', () => {
   it('refuses a zip bomb', () => {
     const bomb = zipSync({ 'xl/worksheets/sheet1.xml': [new Uint8Array(250 * 1024 * 1024), { level: 9 }] });
     expect(() => assertNotZipBomb(bomb)).toThrow(/zip bomb/);
-  });
+  }, 60000); // building a 250 MB test archive is slow when suites run in parallel
 });
 
 describe('FR-D3 dates', () => {

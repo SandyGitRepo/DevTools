@@ -101,7 +101,9 @@ const RULES: Rule[] = [
   { id: 'ifsc', re: /\b[A-Z]{4}0[A-Z0-9]{6}\b/g, mask: (m, o) => m.slice(0, 4) + o.maskChar.repeat(7) },
   {
     id: 'card',
-    re: /\b(?:\d[ -]?){12,18}\d\b/g,
+    // Contiguous 13–19 digits, 4-4-4-(1–7) groups, or Amex 4-6-5. Free-form spacing would let an adjacent
+    // number (e.g. a mobile) swallow the card into one match that then fails Luhn and stays unmasked.
+    re: /\b(?:\d{4}([ -])\d{4}\1\d{4}\1\d{1,7}|\d{4}([ -])\d{6}\2\d{5}|\d{13,19})\b/g,
     valid: (m) => {
       const d = m.replace(/\D/g, '');
       return d.length >= 13 && d.length <= 19 && luhnValid(d) && !/^(\d)\1+$/.test(d);
@@ -132,14 +134,20 @@ export function maskText(text: string, o: MaskOptions, counts: MaskCounts = {}):
   // Replace matches with placeholders as we go so later rules never re-match masked output
   const store: string[] = [];
   let out = text;
-  for (const rule of RULES) {
-    if (!o.rules[rule.id]) continue;
-    out = out.replace(rule.re, (m) => {
-      if (rule.valid && !rule.valid(m)) return m;
-      counts[rule.id] = (counts[rule.id] ?? 0) + 1;
-      store.push(rule.mask(m, o));
-      return `\u0000${store.length - 1}\u0000`;
-    });
+  // Repeat until nothing new is found: a greedy match that fails its checksum (e.g. a run of digit groups)
+  // can hide a real card or Aadhaar on the first pass; once neighbours are masked, the next pass finds it.
+  for (let pass = 0, changed = true; changed && pass < 5; pass++) {
+    changed = false;
+    for (const rule of RULES) {
+      if (!o.rules[rule.id]) continue;
+      out = out.replace(rule.re, (m) => {
+        if (rule.valid && !rule.valid(m)) return m;
+        counts[rule.id] = (counts[rule.id] ?? 0) + 1;
+        store.push(rule.mask(m, o));
+        changed = true;
+        return `\u0000${store.length - 1}\u0000`;
+      });
+    }
   }
   // eslint-disable-next-line no-control-regex -- \u0000 delimits our own placeholders
   return { text: out.replace(/\u0000(\d+)\u0000/g, (_, i) => store[+i]), counts };

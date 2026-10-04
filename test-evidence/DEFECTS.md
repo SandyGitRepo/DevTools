@@ -1,0 +1,23 @@
+# Defects found during the test cycle (2026-10-04)
+
+Found by the property-based, fuzz, security and non-functional suites added in this cycle. All were fixed and are covered by a regression test.
+
+| # | Severity | Area | Found by | Defect | Fix | Regression test |
+| --- | --- | --- | --- | --- | --- | --- |
+| D1 | High (privacy) | Data masker (FR-U8) | Property test, 1,000 random texts | A card number directly after another number (e.g. a mobile) was swallowed into one regex match, failed the Luhn check and was left **unmasked** | Card pattern limited to real groupings (13–19 contiguous digits, 4-4-4-x, Amex 4-6-5); masking repeats until no new value is found | `tests/property.test.ts` › masking hides every sensitive value |
+| D2 | Medium | Cron explainer (FR-U3) | Fuzzing, malformed expressions | cronstrue throws plain strings; the tool read `.message` of a string and crashed on some inputs | Library errors normalised to `Error` objects with clean messages | `tests/property.test.ts` › fuzz: cron, regex, … parsers |
+| D3 | Medium | AES (FR-K4) | Property test | Encrypting an empty string in CTR mode produced output that Decrypt rejected as "too short" | Minimum-length check allows an empty ciphertext | `tests/property.test.ts` › AES round-trip |
+| D4 | Medium | Unicode escape (FR-E5) | Property test | A literal backslash was not escaped, so text containing `\` followed by non-ASCII did not survive escape → unescape | Backslash escaped as `\\` | `tests/property.test.ts` › Unicode escape/unescape |
+| D5 | Medium | Server (SEC-2, A04) | Security suite | After refusing an oversized upload with 413, the server kept the connection open and drained up to 200 MB; the next request on that socket was swallowed | 413 responses send `Connection: close` and drop the socket; the body is never read | `tests/e2e/security.mjs` › SEC-P1, SEC-P2 |
+| D6 | Low (performance) | All editor tools (NFR-1) | Non-functional suite | The first tool opened took ~1.1 s because every tool imported the 2.7 MB Monaco editor before rendering | Editor loads lazily inside the tool, and is warmed in the background after the dashboard has been idle for 2.5 s | `tests/e2e/nonfunctional.mjs` › NFR-1c |
+| D7 | Medium (security) | Gzip / Deflate (FR-E8, SEC-4) | Unit suite under load | The bomb guard checked output size only between 64 KB input pushes; deflate expands ~1032×, so a 30 KB bomb was **fully inflated** (30 MB) before being refused against a 1 MB cap. Up to ~64 MB could be allocated past any cap | Push size derived from the cap (`cap / 1032`, 1–64 KB), keeping overshoot within about one cap; refusal now 60 ms instead of 231 ms, normal throughput unchanged | `tests/encoding.test.ts` › stops a decompression bomb |
+| D9 | Medium (integrity) | Hash generator, HMAC (FR-K1, FR-K2) | New unit tests | "Compare with expected" lower-cased Base64, so a **different** digest differing only in letter case showed as a match; it also stripped `-` as a separator, so a correct Base64url value containing `-` never matched. Hash and HMAC each accepted a different subset of Base64 forms | Shared `matchesExpected()`: hex compared case-insensitively with separators removed; Base64/Base64url compared case-sensitively, padded or not | `tests/lib.test.ts` › FR-K1 expected-hash comparison |
+| D10 | Medium (data integrity) | XML formatter (FR-F6) | New unit tests | Format/Minify did not check well-formedness; the library silently "repairs" broken markup (`<a><b>x</a></b>` → `<a><b>x</b></a>`, `attr=1/` → `attr="1/"`) and the tool reported **Formatted** | Format and Minify run the browser well-formedness check first and show its error with line/column | `tests/e2e/smoke.mjs` › xml rejects malformed input |
+| D8 | Low (tooling) | Test suites | Lint gate (G1) | New test scripts failed lint (unused assignment, errors thrown without `cause`, ANSI-stripping regex) so the release pipeline (`npm run release`) would stop | Fixed in `tests/e2e/nonfunctional.mjs`, `tests/property.test.ts`, `scripts/test-all.mjs` | `npm run lint` |
+
+## Known limitations (accepted, documented)
+
+| Area | Limitation | Mitigation |
+| --- | --- | --- |
+| Data masker | Bare digit groups run together with single spaces (e.g. `2341 2341 2346 4111 1111 1111 1111`) are ambiguous; segmentation can differ between passes | Real logs and payloads separate values with punctuation or fields, which the property test covers; the UI tells users to review output before sharing |
+| First tool, opened within ~2 s of page load | Up to ~1.2 s on a cold cache while the editor downloads | Measured and reported as informational (NFR-1c-cold); later tools open in < 250 ms |

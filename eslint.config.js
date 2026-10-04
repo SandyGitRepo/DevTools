@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', 'release', 'node_modules', 'coverage', 'public/pdfjs'] },
+  { ignores: ['dist', 'release', 'node_modules', 'coverage', 'public/pdfjs', 'test-evidence'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

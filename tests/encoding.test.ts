@@ -125,7 +125,7 @@ describe('FR-E8 Gzip + SEC-4 bomb guard', () => {
     const bomb = compress(new Uint8Array(30 * 1024 * 1024), 'gzip', 9);
     expect(bomb.length).toBeLessThan(100_000);
     expect(() => decompress(bomb, 'gzip', { floorBytes: 1024 * 1024 })).toThrow(DecompressionBombError);
-  });
+  }, 60000); // building a 30 MB test payload is slow under coverage when suites run in parallel
   it('reports corrupt input', () => {
     expect(() => decompress(utf8Encode('not gzip at all'), 'gzip')).toThrow(/Not valid gzip/);
   });

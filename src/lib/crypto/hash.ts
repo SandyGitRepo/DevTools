@@ -1,4 +1,5 @@
 import { createMD5, createSHA1, createSHA256, createSHA384, createSHA512, createSHA3, createCRC32, createSHA224, type IHasher } from 'hash-wasm';
+import { toBase64, toHex } from '../bytes';
 
 export const hashAlgorithms = [
   { id: 'md5', label: 'MD5', legacy: true },
@@ -63,10 +64,15 @@ export async function hashFile(file: Blob, algs: readonly HashAlgorithm[], onPro
   return Object.fromEntries(algs.map((a, i) => [a, hashers[i].digest('binary')]));
 }
 
-/** Normalises an expected hash (hex any case, optional separators, or Base64) for comparison. */
-export function normaliseExpected(s: string): string {
-  return s
-    .trim()
-    .toLowerCase()
-    .replace(/[\s:-]/g, '');
+/**
+ * Does a pasted expected value match the digest? Hex is compared ignoring case and `:`/`-`/space separators;
+ * Base64 and Base64url are compared case-sensitively (with or without padding), since case changes their value.
+ */
+export function matchesExpected(digest: Uint8Array, expected: string): boolean {
+  const s = expected.trim();
+  if (!s) return false;
+  const hex = s.replace(/[\s:-]/g, '').toLowerCase();
+  if (/^[0-9a-f]+$/.test(hex) && hex === toHex(digest)) return true;
+  const b64 = s.replace(/\s/g, '').replace(/=+$/, '');
+  return b64 === toBase64(digest, false, false) || b64 === toBase64(digest, true, false);
 }

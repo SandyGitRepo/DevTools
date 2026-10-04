@@ -3,7 +3,7 @@
  * server/server.mjs (so the production CSP is enforced), runs each tool's sample + primary action,
  * and fails on console errors, CSP violations, error alerts or failed expectations.
  *
- *   node tests/e2e/smoke.mjs [--browser=msedge|chrome] [--shots=<dir>]
+ *   node tests/e2e/smoke.mjs [--browser=msedge|chrome] [--shots=<dir>] [--report=<file.json>] [--port=8123]
  * Requires a build (npm run build). Uses an installed Edge/Chrome; downloads nothing.
  */
 import { spawn } from 'node:child_process';
@@ -15,7 +15,8 @@ import { chromium } from 'playwright-core';
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, '').split('=')));
 const channel = args.browser || 'msedge';
 const shots = args.shots;
-const PORT = 8123;
+const PORT = Number(args.port || 8123);
+const report = args.report;
 const BASE = `http://127.0.0.1:${PORT}/`;
 
 // Tools and what a successful sample run should show.
@@ -142,6 +143,7 @@ const server = spawn(process.execPath, ['server/server.mjs'], { env: { ...proces
 await new Promise((r) => setTimeout(r, 1200));
 
 const browser = await chromium.launch({ channel, headless: true });
+const browserVersion = browser.version();
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, permissions: ['clipboard-read', 'clipboard-write'] });
 await context.addInitScript(() => {
   window.__csp = [];
@@ -154,6 +156,8 @@ page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
 
 if (shots) mkdirSync(shots, { recursive: true });
 const failures = [];
+const results = [];
+const a11yResults = [];
 const t0 = Date.now();
 
 await page.goto(BASE);
@@ -169,6 +173,7 @@ await page.getByRole('heading', { name: 'JWT Decoder' }).waitFor();
 
 for (const [id, spec] of Object.entries(TOOLS)) {
   const before = consoleErrors.length;
+  const started = Date.now();
   try {
     await page.goto(`${BASE}#/tool/${id}`);
     await page.locator('h1').first().waitFor({ timeout: 10000 });
@@ -199,12 +204,32 @@ for (const [id, spec] of Object.entries(TOOLS)) {
     if (csp.length) throw new Error(`CSP violation: ${csp.join(', ')}`);
     if (consoleErrors.length > before) throw new Error(`console: ${consoleErrors.slice(before).join(' | ')}`);
     if (shots) await page.screenshot({ path: path.join(shots, `${id}.png`) });
+    results.push({ id, ok: true, ms: Date.now() - started, screenshot: shots ? `${id}.png` : null });
     console.log(`  ✓ ${id}`);
   } catch (e) {
     failures.push(`${id}: ${e.message.split('\n')[0]}`);
+    results.push({ id, ok: false, ms: Date.now() - started, error: e.message.split('\n')[0], screenshot: shots ? `FAIL-${id}.png` : null });
     console.log(`  ✗ ${id} — ${e.message.split('\n')[0]}`);
     if (shots) await page.screenshot({ path: path.join(shots, `FAIL-${id}.png`) });
   }
+}
+
+// Negative path: malformed XML must be reported, not silently "repaired" by the formatter
+try {
+  await page.goto(`${BASE}#/tool/xml`);
+  await page
+    .locator('main input[type=file]')
+    .first()
+    .setInputFiles({ name: 'bad.xml', mimeType: 'text/xml', buffer: Buffer.from('<a><b>x</a></b>') });
+  await page.getByRole('button', { name: 'Format', exact: true }).click();
+  await page.locator('main [role=alert]').first().waitFor({ timeout: 5000 });
+  if (await page.locator('main').getByText('Formatted').count()) throw new Error('malformed XML was reported as Formatted');
+  await page.getByRole('button', { name: 'Minify', exact: true }).click();
+  await page.locator('main [role=alert]').first().waitFor({ timeout: 5000 });
+  console.log('  ✓ xml rejects malformed input');
+} catch (e) {
+  failures.push(`xml-malformed: ${e.message.split('\n')[0]}`);
+  console.log(`  ✗ xml rejects malformed input — ${e.message.split('\n')[0]}`);
 }
 
 // Light theme + narrow (tablet) layout
@@ -235,18 +260,19 @@ for (const theme of ['dark', 'light']) {
     await a11yPage.addScriptTag({ content: axeSource });
     const res = await a11yPage.evaluate(async () => {
       const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } });
-      return r.violations
-        .filter((v) => v.impact === 'serious' || v.impact === 'critical')
-        .map((v) => ({
-          id: v.id,
-          impact: v.impact,
-          nodes: v.nodes.length,
-          sample: v.nodes[0]?.target?.join(' '),
-          summary: v.nodes[0]?.failureSummary?.split('\n')[1]?.trim(),
-        }));
+      return r.violations.map((v) => ({
+        id: v.id,
+        impact: v.impact,
+        nodes: v.nodes.length,
+        sample: v.nodes[0]?.target?.join(' '),
+        summary: v.nodes[0]?.failureSummary?.split('\n')[1]?.trim(),
+      }));
     });
-    for (const v of res) a11yIssues.push(`${theme} /${route || 'home'}: ${v.id} (${v.impact}, ${v.nodes}×) e.g. ${v.sample} — ${v.summary ?? ''}`);
-    console.log(`  ${res.length ? '✗' : '✓'} a11y ${theme} /${route || 'home'}${res.length ? ` — ${res.length} issue type(s)` : ''}`);
+    const all = res;
+    a11yResults.push({ theme, route: route || 'home', violations: all });
+    const blocking = all.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+    for (const v of blocking) a11yIssues.push(`${theme} /${route || 'home'}: ${v.id} (${v.impact}, ${v.nodes}×) e.g. ${v.sample} — ${v.summary ?? ''}`);
+    console.log(`  ${blocking.length ? '✗' : '✓'} a11y ${theme} /${route || 'home'}${blocking.length ? ` — ${blocking.length} issue type(s)` : ''}`);
   }
 }
 await a11yContext.close();
@@ -256,6 +282,17 @@ await browser.close();
 server.kill();
 
 console.log(`\nFirst load: ${firstLoad} ms · service worker active: ${swReady}`);
+if (report) {
+  const { writeFileSync } = await import('node:fs');
+  writeFileSync(
+    report,
+    JSON.stringify(
+      { browser: channel, version: browserVersion, firstLoadMs: firstLoad, serviceWorker: swReady, tools: results, a11y: a11yResults, failures },
+      null,
+      2,
+    ),
+  );
+}
 if (failures.length) {
   console.log(`\n${failures.length} failure(s):\n  ${failures.join('\n  ')}`);
   process.exit(1);

@@ -54,12 +54,18 @@ export function normalise(expr: string, dialect: CronDialect): Normalised {
 
 export function describe(expr: string, dialect: CronDialect): string {
   const n = normalise(expr, dialect);
-  return cronstrue.toString(n.describe, {
-    use24HourTimeFormat: true,
-    verbose: true,
-    dayOfWeekStartIndexZero: dialect === 'unix',
-    throwExceptionOnParseError: true,
-  });
+  try {
+    return cronstrue.toString(n.describe, {
+      use24HourTimeFormat: true,
+      verbose: true,
+      dayOfWeekStartIndexZero: dialect === 'unix',
+      throwExceptionOnParseError: true,
+    });
+  } catch (e) {
+    // cronstrue throws plain strings such as "Error: Expression contains invalid values"
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(msg.replace(/^Error:\s*/, ''), { cause: e });
+  }
 }
 
 function yearMatches(field: string | undefined, year: number): boolean {
