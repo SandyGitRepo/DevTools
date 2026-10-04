@@ -237,7 +237,7 @@ async function handler(req, res) {
   try {
     if (!allowed(ip)) {
       status = 403;
-      bytes = send(res, 403, errorPage(403, 'Access is restricted to the corporate network.'), { 'Content-Type': 'text/html; charset=utf-8' });
+      bytes = send(res, 403, errorPage(403, 'Access is restricted to allowed networks.'), { 'Content-Type': 'text/html; charset=utf-8' });
     } else if ((req.url || '').startsWith('/api/')) {
       bytes = await handleApi(req, res, ip);
       status = res.statusCode;

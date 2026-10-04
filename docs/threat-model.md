@@ -1,10 +1,10 @@
-# Threat model (v0.1 — Phase 0 deliverable, for InfoSec review)
+# Threat model (v0.1 — for security review)
 
-**Assets:** content users process (JSON payloads, tokens, keys, customer PDFs, KYC documents); integrity of the served bundle; availability of the portal.
+**Assets:** content users process (JSON payloads, tokens, keys, customer PDFs, identity documents); integrity of the served bundle; availability of the portal.
 
-**Trust boundaries:** (1) employee browser ↔ intranet server; (2) the server ↔ the outside world (must be none); (3) the build pipeline ↔ the registry of npm packages.
+**Trust boundaries:** (1) user's browser ↔ private-network server; (2) the server ↔ the outside world (must be none); (3) the build pipeline ↔ the registry of npm packages.
 
-**Actors:** curious or careless employee; malicious insider; attacker who reached the corporate network; compromised upstream npm package.
+**Actors:** curious or careless user; malicious insider; attacker who reached the private network; compromised upstream npm package.
 
 ## Threats and controls (STRIDE, mapped to OWASP 2021)
 
@@ -22,7 +22,7 @@
 | T10 | Decompression bomb                                                                      | A04      | Streaming gunzip aborts past max(10× input, 10 MB), hard cap 200 MB (SEC-4)                                                                                                                                                                                                          | ✅ tested                           |
 | T11 | Server resource abuse                                                                   | A04      | 60 s request/header timeouts; `/api` rate limit 30/min/IP; container CPU/memory limits                                                                                                                                                                                               | ✅ (PDF API: Phase 2)               |
 | T12 | Verbose errors leak internals                                                           | A05      | Generic error pages; no stack traces; JSON logs with metadata only (no query strings, bodies or filenames)                                                                                                                                                                           | ✅                                  |
-| T13 | Session/cookie attacks                                                                  | A07      | No login by design; the app sets no cookies at all (risk acceptance needed from InfoSec — open question)                                                                                                                                                                             | ✅ / ⚠ sign-off                     |
+| T13 | Session/cookie attacks                                                                  | A07      | No login by design; the app sets no cookies at all (deployers should record a risk acceptance)                                                                                                                                                                                       | ✅ / ⚠ sign-off                     |
 | T14 | Server-side request forgery                                                             | A10      | No feature fetches URLs server-side; deny-all egress recommended at network level                                                                                                                                                                                                    | ✅                                  |
 | T15 | User pastes a private key into the cert/JWT tools                                       | —        | Both tools refuse private keys with a clear message                                                                                                                                                                                                                                  | ✅                                  |
 | T16 | Uploaded PDF exploits the server                                                        | A03, A04 | Magic-byte check; 100 MB cap enforced before reading the body; 2,000-page cap; qpdf spawned with an argument array and passwords in a 0600 @args file (never on the command line); private temp dir deleted in `finally`; 55 s job timeout; max 2 concurrent jobs; same-origin check | ✅ tested                           |
@@ -31,6 +31,6 @@
 
 ## Residual risks / decisions needed
 
-- **No audit log** (by design): InfoSec must accept in writing (open question in requirements §9).
+- **No audit log** (by design): organisations deploying DevToolkit should record their acceptance of this.
 - `style-src 'unsafe-inline'` is required by Monaco and Framer Motion (inline style attributes). Script injection remains blocked.
 - web-tree-sitter (Java formatter) contains an `eval` path for WebAssembly modules that embed JS; the bundled Java grammar does not use it, and the CSP would block it if it ever ran (verified in the browser smoke test).

@@ -22,7 +22,7 @@ if %ERRORLEVEL%==0 (
 
 echo.
 echo  DevToolkit needs Node.js 18+ or Python 3.8+ to run its local web server.
-echo  Install one of them, or ask IT to host DevToolkit on the intranet.
+echo  Install one of them, or ask your administrator to host DevToolkit on your network.
 echo.
 pause
 :end

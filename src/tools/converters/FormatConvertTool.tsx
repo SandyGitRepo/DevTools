@@ -10,7 +10,7 @@ import { Segmented, Select, TextInput } from '../../components/ui/controls';
 import { convertData, type DataFormat } from '../../lib/convert/formats';
 
 const SAMPLES: Record<DataFormat, string> = {
-  json: `{"service":{"name":"loan-origination","version":"2.4.1","ports":[8080,8443],"tls":true,"database":{"host":"db.internal","pool":20},"owners":["platform-team","credit-tech"]}}`,
+  json: `{"service":{"name":"loan-origination","version":"2.4.1","ports":[8080,8443],"tls":true,"database":{"host":"db.internal","pool":20},"owners":["platform-team","app-team"]}}`,
   yaml: `service:
   name: loan-origination
   version: 2.4.1

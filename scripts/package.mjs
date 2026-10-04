@@ -31,6 +31,7 @@ const include = [
   'start.bat',
   'start.sh',
   'README.md',
+  'LICENSE',
   'LICENSES.md',
   'docs',
   'deploy',

@@ -33,8 +33,8 @@ Never contains request bodies, query strings, filenames or content (A09). Alert 
 | `Port 8080 is already in use`                    | Set `PORT=8090` (or stop the other process).                                                                                                              |
 | `No build found at …/dist`                       | Running from the source repo: `npm run build` first. Release zips include `dist/`.                                                                        |
 | Colleagues cannot connect                        | Started with the default `HOST=127.0.0.1`. Restart with `HOST=0.0.0.0`; check the Windows firewall prompt.                                                |
-| 403 "restricted to the corporate network"        | Client IP is outside `ALLOW_CIDRS`. Behind a proxy, the proxy's IP is what counts — add it.                                                               |
-| Copy button does nothing on plain HTTP           | Browsers restrict the clipboard API outside HTTPS/localhost; the app falls back to `execCommand`. Use TLS for the intranet deployment.                    |
+| 403 "restricted to allowed networks"             | Client IP is outside `ALLOW_CIDRS`. Behind a proxy, the proxy's IP is what counts — add it.                                                               |
+| Copy button does nothing on plain HTTP           | Browsers restrict the clipboard API outside HTTPS/localhost; the app falls back to `execCommand`. Use TLS for shared deployments.                         |
 | Offline mode not working                         | Service workers need HTTPS or `localhost`. Deploy with TLS.                                                                                               |
 | PDF Protect/Compress say "service not available" | qpdf 11.7+ not found. Install it, put it in `bin/qpdf/`, or set `QPDF_PATH`, then restart. The startup banner shows `PDF service: qpdf x.y.z` when found. |
 | 503 "PDF service is busy"                        | More than 20 queued jobs. Raise `PDF_CONCURRENCY` (CPU permitting) or add instances.                                                                      |

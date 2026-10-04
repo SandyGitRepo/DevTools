@@ -1,4 +1,4 @@
-# Intranet VM deployment (NFR-7).  docker compose -f deploy/docker-compose.yml up -d
+# Private-network VM deployment (NFR-7).  docker compose -f deploy/docker-compose.yml up -d
 # Put an internal reverse proxy / ALB with TLS in front, or mount certs and set TLS_CERT/TLS_KEY.
 services:
   devtoolkit:
@@ -9,7 +9,7 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8080
-      # A01: restrict to corporate ranges (edit to match your network)
+      # A01: restrict to your private address ranges (edit to match your network)
       ALLOW_CIDRS: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1/32"
       # TLS_CERT: /certs/tls.crt
       # TLS_KEY: /certs/tls.key

@@ -22,7 +22,7 @@ export default function WatermarkTool() {
   const { pdf } = state;
   const [mode, setMode] = useState<'watermark' | 'numbers'>('watermark');
   // watermark
-  const [text, setText] = useState('Internal Use Only');
+  const [text, setText] = useState('Confidential');
   const [size, setSize] = useState('54');
   const [opacity, setOpacity] = useState(0.18);
   const [angle, setAngle] = useState('45');

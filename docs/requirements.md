@@ -1,4 +1,4 @@
-# DevToolkit — Internal Utilities Portal: Requirements
+# DevToolkit — Self-Hosted Utilities Portal: Requirements
 
 Version 1.0 · Oct 4, 2026 · Author: Sandeep
 
@@ -6,13 +6,13 @@ Version 1.0 · Oct 4, 2026 · Author: Sandeep
 
 ## 1. Overview
 
-DevToolkit is an intranet-only web portal that gives every employee safe, offline-grade utilities (formatters, encoders, crypto, PDF editing), so no company data is ever pasted into public websites.
+DevToolkit is a self-hosted web portal that gives teams safe, offline-grade utilities (formatters, encoders, crypto, PDF editing), so no sensitive data is ever pasted into public websites.
 
-**Problem.** Employees routinely paste JSON payloads, SQL, API tokens, customer PDFs and config files into public sites such as online formatters and PDF editors. That creates an uncontrolled data-leak path for PII and credentials, and exposure under the DPDP Act 2023 and regulatory IT-governance rules.
+**Problem.** People routinely paste JSON payloads, SQL, API tokens, customer PDFs and config files into public sites such as online formatters and PDF editors. That creates an uncontrolled data-leak path for PII and credentials, and exposure under the DPDP Act 2023 and regulatory IT-governance rules.
 
 **Objectives**
 
-1. Zero data egress: every operation runs inside the corporate network, with no third-party API calls.
+1. Zero data egress: every operation runs on the user’s device or a private network, with no third-party API calls.
 2. One portal replacing 15+ public tools used today.
 3. OWASP Top 10 (2021) controls designed in and verified by SAST/DAST before go-live.
 4. Top-tier UX: a sci-fi HUD interface, themable to brand colours, that people prefer over public tools.
@@ -33,27 +33,27 @@ DevToolkit is an intranet-only web portal that gives every employee safe, offlin
 
 ## 2. Users, assumptions and constraints
 
-All employees on the corporate network are users; v1 has no role distinctions.
+Anyone with access to the deployment is a user; v1 has no role distinctions.
 
 | User group | Typical use |
 | --- | --- |
 | Developers / QA | JSON, SQL, Java, JS formatting; JWT decode; Base64; regex testing |
 | IT Ops / Infra / Security | Hashes, certificate decode, key generation, cron, timestamps |
-| Business, Credit, Ops | PDF merge/split/delete pages for loan files and KYC documents |
+| Business / Operations | PDF merge/split/delete pages for case files and scanned documents |
 | Product / Analysts | CSV↔JSON, Excel preview, text diff |
 
 **Hard constraints**
 
 - **No login, no audit, no telemetry of content.** The app holds no user content after the request ends.
-- **Intranet only.** Reachable only from the corporate LAN/VPN; no public DNS, no internet ingress.
+- **Private network only.** Reachable only from a LAN/VPN; no public DNS, no internet ingress.
 - **No external APIs or CDNs at runtime.** Every JS, CSS and font asset is self-hosted; the container has no outbound internet.
 - **Free, open-source libraries only** (MIT, Apache-2.0, BSD, ISC). AGPL/GPL libraries are excluded unless Legal approves.
 - **Client-side first.** Processing runs in the browser by default, so data never leaves the user's machine. The server is used only where a browser cannot do the job (e.g., PDF encryption, heavy PDF compression).
 
 **Assumptions**
 
-- Users run Chrome or Edge (last 2 versions) on corporate laptops.
-- Hosted on existing internal infrastructure (on-prem VM or private EKS/ECS behind an internal ALB).
+- Users run Chrome or Edge (last 2 versions).
+- Hosted on private infrastructure (on-prem VM or private EKS/ECS behind an internal load balancer).
 - Max PDF size 100 MB; max text input 10 MB.
 
 ## 3. Functional requirements
@@ -122,7 +122,7 @@ All pages appear as draggable thumbnails, and every operation shows a preview be
 | FR-P5 | Reorder and rotate | Drag-and-drop reorder; rotate 90/180/270 per page or all pages | pdf-lib, SortableJS (MIT) | Browser |
 | FR-P6 | Extract pages | Save selected pages as a new PDF | pdf-lib | Browser |
 | FR-P7 | Image ↔ PDF | JPG/PNG to PDF (page size, margins); PDF pages to PNG | pdf-lib, pdf.js | Browser |
-| FR-P8 | Watermark and page numbers | Text watermark (e.g., "Internal Use Only") with opacity and angle; page numbering | pdf-lib | Browser |
+| FR-P8 | Watermark and page numbers | Text watermark (e.g., "Confidential") with opacity and angle; page numbering | pdf-lib | Browser |
 | FR-P9 | Metadata | View and strip author/title/producer metadata | pdf-lib | Browser |
 | FR-P10 | Protect / unlock | Add a password (AES-256); remove a password the user knows | qpdf (Apache-2.0) | Server, in-memory |
 | FR-P11 | Compress | Lossless structural compression and image downsampling | qpdf (Apache-2.0) + server-side image re-encode | Server, in-memory |
@@ -153,7 +153,7 @@ All pages appear as draggable thumbnails, and every operation shows a preview be
 
 ### 3.7 Unit converters
 
-Conversion is instant and two-way as the user types: editing any field updates all the others. Includes Indian land and area units used in property valuation and loan files.
+Conversion is instant and two-way as the user types: editing any field updates all the others. Includes Indian land and area units used in property valuation.
 
 | ID | Tool | Key behaviour | Library (licence) | Runs in |
 | --- | --- | --- | --- | --- |
@@ -224,7 +224,7 @@ The look is a sci-fi command-centre HUD, like a starship console, built from a c
 - **UI-10** WCAG 2.1 AA: 4.5:1 text contrast, full keyboard navigation, visible focus rings, ARIA labels.
 - **UI-11** "Reduce motion" honoured via prefers-reduced-motion; a toggle disables all animation.
 - **UI-12** Every tool has a one-line description and a "Try sample" button that loads safe sample data.
-- **UI-13** Footer: "For internal use only · Do not upload data you are not authorised to handle", plus a support contact.
+- **UI-13** Footer: "Do not upload data you are not authorised to handle", plus a support contact.
 
 **Front-end stack:** React 18 + Vite + TypeScript, Tailwind CSS, Framer Motion (MIT) for animation, lucide-react icons (ISC), Monaco editor (MIT).
 
@@ -234,7 +234,7 @@ Having no login does not remove the need for security. The main risks are malici
 
 | OWASP category | Risk in this app | Required control | Verified by |
 | --- | --- | --- | --- |
-| A01 Broken Access Control | Internal app reachable from outside; directory traversal on server endpoints | Internal ALB/ingress only, with an IP allow-list for corporate ranges; no file paths accepted from the client; CORS locked to own origin | Network scan from outside + ZAP traversal tests |
+| A01 Broken Access Control | Internal app reachable from outside; directory traversal on server endpoints | Internal ALB/ingress only, with an IP allow-list for allowed address ranges; no file paths accepted from the client; CORS locked to own origin | Network scan from outside + ZAP traversal tests |
 | A02 Cryptographic Failures | Weak algorithms used by mistake; data over plain HTTP | TLS 1.2+ only with internal CA certificate, HSTS; only Web Crypto or vetted libraries (no home-grown crypto); MD5/SHA-1/AES-ECB flagged as insecure in the UI | testssl.sh, unit tests against NIST vectors |
 | A03 Injection (incl. XSS) | Formatted HTML/Markdown/SVG executing scripts; command injection into qpdf | Output rendered as text in Monaco, never via innerHTML; DOMPurify for any preview; strict CSP (`default-src 'self'`, no inline script, `object-src 'none'`); qpdf invoked with an argument array, never a shell string | ZAP active scan, XSS payload test suite, Semgrep |
 | A04 Insecure Design | Server keeps user files; ReDoS freezes the browser | Threat model before build; server processing in memory/tmpfs, deleted in a `finally` block; regex and heavy parsing in Web Workers with a 5 s timeout | Design review sign-off, threat model document |
@@ -252,7 +252,7 @@ Having no login does not remove the need for security. The main risks are malici
 - **SEC-3** PDF safety: strip JavaScript and embedded files on output by default; pdf.js runs with `isEvalSupported: false`.
 - **SEC-4** Zip-bomb and decompression-bomb guard on Gzip/Excel inputs (max expansion 10x / 200 MB).
 - **SEC-5** Clipboard and localStorage never hold content beyond the user's own action.
-- **SEC-6** Pre-go-live VAPT by the internal InfoSec team or an empanelled vendor; all High/Critical findings closed.
+- **SEC-6** Pre-go-live penetration test (VAPT); all High/Critical findings closed.
 
 ## 6. Non-functional requirements
 
@@ -274,7 +274,7 @@ DevToolkit is a browser-first single-page app. The server only ships static file
 
 ```mermaid
 flowchart TB
-    subgraph Browser["Employee browser — ~90% of tools run here"]
+    subgraph Browser["User browser — ~90% of tools run here"]
         SPA["React SPA (sci-fi HUD UI)<br/>Monaco editor, command palette"]
         WW["Web Workers<br/>Formatters, encoders, crypto,<br/>PDF edits via pdf-lib / pdf.js"]
         PWA["PWA cache<br/>Self-hosted assets with SRI,<br/>works offline after first load"]
@@ -295,7 +295,7 @@ flowchart TB
     CI -- "deploys signed image" --> Net
 ```
 
-Everything inside the browser box runs on the employee's laptop. The PDF API is the only component that ever sees file content, and it keeps nothing.
+Everything inside the browser box runs on the user's device. The PDF API is the only component that ever sees file content, and it keeps nothing.
 
 **Stack summary**
 
@@ -328,19 +328,19 @@ No release ships unless every quality gate below passes in CI. The target is zer
 
 1. Test cases are written per FR-ID before development (traceability matrix FR → test).
 2. The CI pipeline runs on every pull request; the main branch is protected.
-3. UAT with 10–15 pilot users across Dev, Ops and Credit for 2 weeks, with bugs triaged daily.
-4. VAPT by InfoSec, with a retest after fixes.
-5. Go-live checklist signed by IT, InfoSec and Architecture.
+3. UAT with 10–15 pilot users across development and operations for 2 weeks, with bugs triaged daily.
+4. Penetration test (VAPT), with a retest after fixes.
+5. Go-live checklist signed off by the deployment owner and security reviewer.
 
 ## 9. Delivery plan, risks and open questions
 
-Estimated 12 weeks to production, with 2 front-end devs, 1 back-end dev, 1 QA engineer, and a part-time UI designer and InfoSec reviewer.
+Estimated 12 weeks to production for a small team (front-end, back-end, QA, with part-time design and security review).
 
 1. **Phase 0 — Foundation (weeks 1–2):** threat model, theme palette sign-off, UI design system and HUD shell, CI/CD with security gates, internal package mirror.
 2. **Phase 1 — MVP (weeks 3–6):** Formatters (3.1), Encoding (3.2), Hashing and crypto (3.3). Pilot release to the IT team.
 3. **Phase 2 — PDF and converters (weeks 7–9):** PDF tools (3.4) including the server-side qpdf service, and Data converters (3.5).
 4. **Phase 3 — Utilities and hardening (weeks 10–11):** Utilities (3.6), Unit converters (3.7), Cheat sheet library (3.8), performance tuning, accessibility fixes, VAPT.
-5. **Phase 4 — UAT and go-live (week 12):** organisation-wide UAT, InfoSec sign-off, launch comms, intranet link.
+5. **Phase 4 — UAT and go-live (week 12):** wider UAT, security sign-off, launch notes and published link.
 
 **Risks**
 
@@ -356,6 +356,6 @@ Estimated 12 weeks to production, with 2 front-end devs, 1 back-end dev, 1 QA en
 
 - [ ] Final brand colours and logo to replace the default theme?
 - [ ] Hosting target: on-prem VM or private EKS cluster?
-- [ ] Will InfoSec accept the "no audit log" decision in writing, given regulatory IT-governance expectations?
+- [ ] Should deployers be required to record acceptance of the "no audit log" decision, given IT-governance expectations?
 - [x] Is OCR or PDF text editing needed in v2?
-- [ ] Is a Salesforce Apex formatter needed for the CRM team?
+- [ ] Is a Salesforce Apex formatter needed?

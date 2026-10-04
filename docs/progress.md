@@ -14,7 +14,7 @@ Verification: **U** = unit / known-answer test (`tests/*.test.ts`), **E** = brow
 | Standalone server with OWASP headers                             | ✅       | `server/server.mjs`; traversal, 405, headers verified with curl     |
 | Python fallback server, start scripts, release zip               | ✅       | `server/serve.py`, `start.bat/.sh`, `npm run package`               |
 | CI gates (lint, types, tests, licences, audit, build, e2e, SBOM) | ✅       | `.github/workflows/ci.yml`                                          |
-| Threat model                                                     | ✅ draft | `docs/threat-model.md` — needs InfoSec review                       |
+| Threat model                                                     | ✅ draft | `docs/threat-model.md` — needs security review                      |
 | Docker / compose                                                 | ✅       | Helm chart deferred until hosting target is decided (open question) |
 
 ## Common behaviour (3.0)

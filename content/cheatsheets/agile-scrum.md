@@ -86,7 +86,7 @@ Definition of Done (example): code reviewed · unit tests ≥ 85% · security sc
 - Ready items are small, clear and testable (INVEST)
 
 ```text
-As a credit officer, I want to merge KYC PDFs, so that each loan file is a single document.
+As an operations analyst, I want to merge scanned PDFs, so that each case file is a single document.
 Acceptance: given 2–50 PDFs, when I merge, then pages keep order and scripts are removed.
 ```
 

@@ -2,9 +2,11 @@
   "name": "devtoolkit",
   "private": true,
   "version": "0.1.0",
-  "description": "DevToolkit - offline-grade internal utilities portal. All processing local, zero data egress.",
+  "description": "DevToolkit - self-hosted, offline-grade developer utilities. All processing local, zero data egress.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "author": "Sandeep Lokhande",
+  "repository": "github:SandyGitRepo/DevTools",
   "engines": {
     "node": ">=18"
   },

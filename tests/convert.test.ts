@@ -114,13 +114,13 @@ describe('FR-D4 JSON → classes', () => {
     expect(ts).toContain('export interface Loan {');
   }, 30000);
   it('Java POJO with package', async () => {
-    const java = await generateCode(sample, { lang: 'java', topLevel: 'Customer', namespace: 'com.bank.model', lombok: false, justTypes: true });
-    expect(java).toContain('package com.bank.model;');
+    const java = await generateCode(sample, { lang: 'java', topLevel: 'Customer', namespace: 'com.example.model', lombok: false, justTypes: true });
+    expect(java).toContain('package com.example.model;');
     expect(java).toMatch(/class Customer/);
   }, 30000);
   it('C# class with namespace', async () => {
-    const cs = await generateCode(sample, { lang: 'csharp', topLevel: 'Customer', namespace: 'Bank.Models', lombok: false, justTypes: true });
-    expect(cs).toContain('namespace Bank.Models');
+    const cs = await generateCode(sample, { lang: 'csharp', topLevel: 'Customer', namespace: 'Example.Models', lombok: false, justTypes: true });
+    expect(cs).toContain('namespace Example.Models');
     expect(cs).toMatch(/public partial class Customer/);
   }, 30000);
   it('reports invalid JSON with position', async () => {

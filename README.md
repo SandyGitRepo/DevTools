@@ -1,9 +1,10 @@
 # DevToolkit
 
-Internal utilities portal — 54 tools — formatters, encoders, crypto, PDF, data converters, developer utilities, unit converters and an offline cheat-sheet library — that run **entirely in the browser**, so company data never gets pasted into public websites.
+Self-hosted utilities portal — 54 tools — formatters, encoders, crypto, PDF, data converters, developer utilities, unit converters and an offline cheat-sheet library — that run **entirely in the browser**, so sensitive data never gets pasted into public websites.
 
 - Full requirements: [docs/requirements.md](docs/requirements.md)
 - Build status by requirement: [docs/progress.md](docs/progress.md)
+- License: [MIT](LICENSE)
 
 ---
 
@@ -17,7 +18,7 @@ You need **Node.js 18+** _or_ **Python 3.8+**. No installation, no internet.
    - **macOS / Linux:** `./start.sh`
 3. Your browser opens at <http://localhost:8080/>.
 
-By default only your own computer can connect. To serve your team on the intranet:
+By default only your own computer can connect. To serve your team on your private network:
 
 ```bash
 # Windows (cmd)

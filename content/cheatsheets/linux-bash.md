@@ -84,8 +84,8 @@ nohup ./job.sh > job.log 2>&1 &
 - `dig` resolves DNS names
 
 ```bash
-curl -sS -o /dev/null -w "%{http_code} %{time_total}s\n" https://intranet.example/health
-curl -sI https://intranet.example
+curl -sS -o /dev/null -w "%{http_code} %{time_total}s\n" https://tools.example.com/health
+curl -sI https://tools.example.com
 nc -zv db.internal 5432
 dig +short api.internal
 ```

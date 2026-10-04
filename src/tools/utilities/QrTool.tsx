@@ -11,7 +11,7 @@ import { downloadBlob } from '../../lib/files';
 type Level = 'L' | 'M' | 'Q' | 'H';
 
 function Generate() {
-  const [text, setText] = useState('https://devtoolkit.intranet/');
+  const [text, setText] = useState('https://github.com/SandyGitRepo/DevTools');
   const [level, setLevel] = useState<Level>('M');
   const [size, setSize] = useState('512');
   const [dark, setDark] = useState('#001a33');

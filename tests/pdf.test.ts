@@ -136,7 +136,7 @@ describe('FR-P7 images to PDF', () => {
 
 describe('FR-P8 watermark and numbering', () => {
   it('stamps text on selected pages', async () => {
-    const out = await watermark(await makePdf(3), { text: 'Internal Use Only', fontSize: 48, opacity: 0.15, angle: 45, color: [0.8, 0, 0], pages: '1,3' });
+    const out = await watermark(await makePdf(3), { text: 'Confidential', fontSize: 48, opacity: 0.15, angle: 45, color: [0.8, 0, 0], pages: '1,3' });
     expect((await PDFDocument.load(out)).getPageCount()).toBe(3);
   });
   it('rejects characters outside WinAnsi', async () => {

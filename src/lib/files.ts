@@ -33,7 +33,7 @@ export async function copyText(text: string): Promise<boolean> {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    // Fallback for non-secure contexts (plain http on the intranet)
+    // Fallback for non-secure contexts (plain http on a private network)
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.setAttribute('readonly', '');

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// Relative base so the built app works from any sub-path (e.g. https://intranet/devtoolkit/).
+// Relative base so the built app works from any sub-path (e.g. https://tools.example.com/devtoolkit/).
 import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({

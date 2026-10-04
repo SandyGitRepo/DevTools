@@ -20,7 +20,7 @@ const SAMPLE = `{
     "password": "S3cret!",
     "card": "4111 1111 1111 1111"
   },
-  "account": { "number": 50100293812345, "ifsc": "HDFC0001234" },
+  "account": { "number": 50100293812345, "ifsc": "EXMP0001234" },
   "note": "Called from 9876543210 regarding a/c 50100293812345"
 }`;
 

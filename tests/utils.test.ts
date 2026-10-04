@@ -140,10 +140,10 @@ describe('FR-U8 masker', () => {
   it('masks Indian PII in text', () => {
     const aadhaar = withVerhoeff('23412341234');
     const spaced = `${aadhaar.slice(0, 4)} ${aadhaar.slice(4, 8)} ${aadhaar.slice(8)}`;
-    const src = `PAN ABCPE1234F, Aadhaar ${spaced}, card 4111 1111 1111 1111, mobile +91 98765 43210, mail asha.verma@bank.in, a/c 50100293812345`;
+    const src = `PAN ABCPE1234F, Aadhaar ${spaced}, card 4111 1111 1111 1111, mobile +91 98765 43210, mail asha.verma@example.in, a/c 50100293812345`;
     const { text, counts } = maskText(src, defaultMaskOptions);
     expect(text).toBe(
-      `PAN ABXXXXXX4F, Aadhaar XXXX XXXX ${aadhaar.slice(8)}, card XXXX XXXX XXXX 1111, mobile +91 XXXXX X3210, mail aXXXXXXXXX@bank.in, a/c XXXXXXXXXX2345`,
+      `PAN ABXXXXXX4F, Aadhaar XXXX XXXX ${aadhaar.slice(8)}, card XXXX XXXX XXXX 1111, mobile +91 XXXXX X3210, mail aXXXXXXXXX@example.in, a/c XXXXXXXXXX2345`,
     );
     expect(counts).toEqual({ email: 1, pan: 1, card: 1, aadhaar: 1, mobile: 1, account: 1 });
   });

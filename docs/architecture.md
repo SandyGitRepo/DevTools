@@ -3,7 +3,7 @@
 DevToolkit is a browser-first single-page app. The server ships static files and (from Phase 2) runs the few PDF jobs a browser cannot do well.
 
 ```
-Browser (employee laptop)                         Server (intranet VM / container)
+Browser (user's device)                           Server (private VM / container)
 ┌───────────────────────────────────────────┐     ┌──────────────────────────────────────┐
 │ React SPA · HashRouter · Tailwind HUD     │     │ server/server.mjs (Node, 0 deps)     │
 │  ├─ Tool registry (src/registry/tools.ts) │ GET │  ├─ static dist/ + security headers  │

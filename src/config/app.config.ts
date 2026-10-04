@@ -4,11 +4,11 @@
  */
 export const appConfig = {
   name: 'DevToolkit',
-  tagline: 'Internal utilities · zero data egress',
+  tagline: 'Developer utilities · zero data egress',
   /** Path relative to the site root; replace public/logo.svg or point elsewhere. */
   logoUrl: './logo.svg',
-  supportContact: 'it-helpdesk@yourcompany.internal',
-  footerNotice: 'For internal use only · Do not upload data you are not authorised to handle',
+  supportContact: 'github.com/SandyGitRepo/DevTools/issues',
+  footerNotice: 'Processed on your device · Do not upload data you are not authorised to handle',
   /** Base URL of the optional PDF API (server-side tools). Same origin by default. */
   apiBase: './api',
   limits: {

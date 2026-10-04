@@ -29,7 +29,7 @@ export default function About() {
     <div className="mx-auto max-w-3xl space-y-6 pt-4">
       <h1 className="font-hud text-xl font-bold uppercase tracking-widest">About & Privacy</h1>
       <p className="text-muted">
-        {appConfig.name} replaces public online formatters, encoders and PDF editors so company data never leaves the corporate network.
+        {appConfig.name} replaces public online formatters, encoders and PDF editors so sensitive data never leaves your device or your network.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {points.map((p) => (

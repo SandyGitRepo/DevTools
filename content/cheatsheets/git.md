@@ -33,7 +33,7 @@ git config --global core.autocrlf input     # Windows: true
 git switch main && git pull
 git switch -c feature/LOAN-123-emi-rounding
 git add -p
-git commit -m "Round EMI with HALF_EVEN to match core banking"
+git commit -m "Round EMI with HALF_EVEN to match the ledger"
 git push -u origin feature/LOAN-123-emi-rounding
 ```
 
