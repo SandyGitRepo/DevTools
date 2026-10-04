@@ -1,0 +1,46 @@
+# Quality gates from requirements section 8. Every PR must pass all jobs.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type-check
+        run: npm run typecheck
+      - name: Unit + known-answer tests
+        run: npm test
+      - name: Licence allow-list
+        run: npm run licenses
+      - name: Dependency audit (fail on High/Critical)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Build
+        run: npm run build
+      - name: Browser smoke test (strict CSP)
+        run: node tests/e2e/smoke.mjs --browser=chrome --shots=e2e-shots
+      - name: SBOM (CycloneDX)
+        run: npx --yes @cyclonedx/cyclonedx-npm --omit dev --output-file sbom.cdx.json
+      - name: Package release zip
+        run: npm run package
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: devtoolkit-build
+          path: |
+            release/
+            sbom.cdx.json
+            e2e-shots/

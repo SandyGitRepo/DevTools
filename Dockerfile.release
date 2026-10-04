@@ -1,0 +1,11 @@
+# DevToolkit — runtime image from the release zip (no build step).  docker build -t devtoolkit .
+FROM node:22-alpine
+RUN apk add --no-cache qpdf && addgroup -S app && adduser -S -G app app
+WORKDIR /app
+COPY --chown=root:root dist ./dist
+COPY --chown=root:root server/server.mjs server/pdf-api.mjs ./server/
+USER app
+ENV HOST=0.0.0.0 PORT=8080 NODE_ENV=production
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:8080/api/health >/dev/null || exit 1
+CMD ["node", "server/server.mjs"]

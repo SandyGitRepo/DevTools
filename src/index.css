@@ -1,0 +1,476 @@
+@import '@fontsource/orbitron/500.css';
+@import '@fontsource/orbitron/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Theme tokens (requirements section 4). Values are RGB triplets so Tailwind can apply alpha.
+ * To re-brand, change --primary / --accent (and optionally --hud-cyan) only.
+ */
+:root,
+.dark {
+  --primary: 0 114 188; /* #0072BC */
+  --accent: 243 112 33; /* #F37021 */
+  --hud-cyan: 63 182 255; /* #3FB6FF */
+  --base: 0 26 51; /* #001A33 */
+  --base-2: 0 43 84; /* #002B54 */
+  --text-primary: 232 241 250; /* #E8F1FA */
+  --text-secondary: 143 169 196; /* #8FA9C4 */
+  --success: 46 204 154; /* #2ECC9A */
+  --error: 255 90 95; /* #FF5A5F */
+  --warn: 255 196 77;
+  --surface-glass: rgba(0, 114, 188, 0.08);
+  --surface-strong: rgba(0, 30, 60, 0.72);
+  --grid-line: rgba(63, 182, 255, 0.07);
+  color-scheme: dark;
+}
+
+.light {
+  --base: 244 248 252;
+  --base-2: 226 236 246;
+  --text-primary: 10 30 52;
+  --text-secondary: 66 90 115;
+  --hud-cyan: 0 94 155; /* darker so cyan-tinted text keeps 4.5:1 on white */
+  --success: 12 128 90;
+  --error: 196 34 40;
+  --warn: 150 95 0;
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.94);
+  --grid-line: rgba(0, 114, 188, 0.08);
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply font-sans text-fg antialiased;
+  background: linear-gradient(160deg, rgb(var(--base)) 0%, rgb(var(--base-2)) 100%) fixed;
+}
+
+h1,
+h2,
+h3,
+.font-hud {
+  font-family: Orbitron, Inter, sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* Visible focus rings (UI-10) */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: rgb(var(--primary) / 0.45);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--primary) / 0.5) transparent;
+}
+
+@layer components {
+  /* Glass panel with corner brackets (UI-2) */
+  .hud-panel {
+    position: relative;
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgb(var(--primary) / 0.45);
+    border-radius: 6px;
+    box-shadow:
+      0 0 24px rgb(var(--hud-cyan) / 0.08),
+      inset 0 0 32px rgb(var(--primary) / 0.05);
+  }
+  .hud-panel::before,
+  .hud-panel::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    border-color: rgb(var(--hud-cyan));
+    border-style: solid;
+    opacity: 0.9;
+  }
+  .hud-panel::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+    border-top-left-radius: 6px;
+  }
+  .hud-panel::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 2px 2px 0;
+    border-bottom-right-radius: 6px;
+  }
+
+  .hud-btn {
+    @apply inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-[box-shadow,background-color,border-color] duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+    border: 1px solid rgb(var(--primary) / 0.6);
+    background: rgb(var(--primary) / 0.12);
+    color: rgb(var(--text-primary));
+  }
+  .hud-btn:hover:not(:disabled) {
+    background: rgb(var(--primary) / 0.25);
+    box-shadow: 0 0 12px rgb(var(--hud-cyan) / 0.45);
+  }
+  .hud-btn-accent {
+    border-color: rgb(var(--accent));
+    background: rgb(var(--accent) / 0.9);
+    color: #1a0a00;
+  }
+  .hud-btn-accent:hover:not(:disabled) {
+    background: rgb(var(--accent));
+    box-shadow: 0 0 14px rgb(var(--accent) / 0.6);
+  }
+  .hud-btn-ghost {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .hud-input {
+    @apply w-full rounded px-2.5 py-1.5 text-sm text-fg placeholder:text-muted/70;
+    background: var(--surface-strong);
+    border: 1px solid rgb(var(--primary) / 0.45);
+  }
+  .hud-input:focus {
+    border-color: rgb(var(--hud-cyan));
+    outline: none;
+    box-shadow: 0 0 0 1px rgb(var(--hud-cyan) / 0.5);
+  }
+  select.hud-input {
+    @apply pr-7;
+  }
+  .hud-label {
+    @apply mb-1 block text-xs font-medium uppercase tracking-wider text-muted;
+  }
+  .hud-table {
+    @apply w-full text-left text-sm;
+  }
+  .hud-table th {
+    @apply border-b border-primary/40 px-2 py-1.5 text-xs uppercase tracking-wider text-muted;
+  }
+  .hud-table td {
+    @apply border-b border-primary/15 px-2 py-1.5 align-top;
+  }
+}
+
+/* Animated hex-grid background (UI-1): CSS-only, GPU transform, paused when hidden */
+.hud-grid {
+  position: fixed;
+  inset: -64px;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: grid-drift 40s linear infinite;
+  will-change: transform;
+}
+.hud-grid.paused {
+  animation-play-state: paused;
+}
+@keyframes grid-drift {
+  to {
+    transform: translate3d(48px, 48px, 0);
+  }
+}
+
+/* Scan-line sweep on load (UI-4) */
+.scanline {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  z-index: 60;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(var(--hud-cyan)), transparent);
+  box-shadow: 0 0 12px rgb(var(--hud-cyan));
+  animation: scan 280ms ease-out forwards;
+}
+@keyframes scan {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+/* Radial processing loader */
+.hud-loader {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--hud-cyan) / 0.25);
+  border-top-color: rgb(var(--hud-cyan));
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduce motion (UI-11): OS preference or in-app toggle */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .hud-grid,
+  .scanline {
+    display: none;
+  }
+}
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+.reduce-motion .hud-grid,
+.reduce-motion .scanline {
+  display: none;
+}
+
+/* Markdown preview */
+.md-preview {
+  @apply text-sm leading-relaxed;
+}
+.md-preview h1 {
+  @apply mb-3 mt-4 text-xl;
+}
+.md-preview h2 {
+  @apply mb-2 mt-4 text-lg;
+}
+.md-preview h3 {
+  @apply mb-2 mt-3 text-base;
+}
+.md-preview p {
+  @apply my-2;
+}
+.md-preview ul {
+  @apply my-2 list-disc pl-6;
+}
+.md-preview ol {
+  @apply my-2 list-decimal pl-6;
+}
+.md-preview code {
+  @apply rounded bg-primary/15 px-1 font-mono text-[0.85em];
+}
+.md-preview pre {
+  @apply my-2 overflow-auto rounded bg-black/30 p-3;
+}
+.md-preview pre code {
+  @apply bg-transparent p-0;
+}
+.md-preview a {
+  @apply text-cyan underline;
+}
+.md-preview table {
+  @apply my-2 border-collapse;
+}
+.md-preview th,
+.md-preview td {
+  @apply border border-primary/30 px-2 py-1;
+}
+.md-preview blockquote {
+  @apply my-2 border-l-2 border-accent pl-3 text-muted;
+}
+
+/* Cheat sheet code blocks (FR-H3) with Prism token colours */
+.cs-code pre {
+  @apply overflow-x-auto rounded border border-primary/30 p-3 pr-28 font-mono text-[12.5px] leading-relaxed;
+  background: rgb(0 10 25 / 0.55);
+}
+.light .cs-code pre {
+  background: #f3f7fb;
+}
+.cs-prose ul {
+  @apply my-1;
+}
+.cs-prose li {
+  @apply my-0.5;
+}
+.token.comment,
+.token.prolog {
+  color: #6a8aaa;
+  font-style: italic;
+}
+.token.keyword,
+.token.important,
+.token.atrule {
+  color: #f37021;
+}
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex {
+  color: #7fd8ff;
+}
+.token.number,
+.token.boolean,
+.token.constant {
+  color: #ffc44d;
+}
+.token.function,
+.token.class-name {
+  color: #a8e6cf;
+}
+.token.property,
+.token.tag,
+.token.attr-name,
+.token.variable {
+  color: #3fb6ff;
+}
+.token.operator,
+.token.punctuation {
+  color: #8fa9c4;
+}
+.light .token.comment {
+  color: #5a6b7d;
+}
+.light .token.keyword,
+.light .token.atrule {
+  color: #b24a00;
+}
+.light .token.string,
+.light .token.regex,
+.light .token.attr-value {
+  color: #00639e;
+}
+.light .token.number,
+.light .token.boolean {
+  color: #8a5a00;
+}
+.light .token.function,
+.light .token.class-name {
+  color: #0c7a55;
+}
+.light .token.property,
+.light .token.tag,
+.light .token.variable {
+  color: #005e9b;
+}
+.light .token.operator,
+.light .token.punctuation {
+  color: #42596f;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body,
+  #root,
+  main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  body {
+    background: #fff !important;
+    color: #0a1e34 !important;
+  }
+  .hud-grid,
+  .scanline {
+    display: none !important;
+  }
+  /* Only the sheet itself prints: hide the tool header, search and sheet list */
+  .tool-header {
+    display: none !important;
+  }
+  .hud-panel {
+    background: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #b8c7d6 !important;
+  }
+  .hud-panel::before,
+  .hud-panel::after {
+    display: none;
+  }
+  .cs-cards {
+    display: block !important;
+    column-count: 2;
+    column-gap: 8mm;
+  }
+  .cs-card {
+    break-inside: avoid;
+    margin-bottom: 4mm;
+    padding: 3mm !important;
+  }
+  .cs-card h3 {
+    color: #0072bc !important;
+  }
+  .cs-code pre {
+    background: #f3f7fb !important;
+    padding-right: 3mm !important;
+    font-size: 9pt;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .text-muted,
+  .md-preview {
+    color: #2a3d52 !important;
+  }
+  .text-fg,
+  .cs-sheet h2 {
+    color: #0a1e34 !important;
+  }
+  .token.function,
+  .token.class-name {
+    color: #0c7a55 !important;
+  }
+  .token.number,
+  .token.boolean,
+  .token.constant {
+    color: #8a5a00 !important;
+  }
+  .token.property,
+  .token.tag,
+  .token.variable,
+  .token.attr-name {
+    color: #005e9b !important;
+  }
+  .token.operator,
+  .token.punctuation {
+    color: #42596f !important;
+  }
+  .token.comment {
+    color: #5a6b7d !important;
+  }
+  .token.keyword {
+    color: #b24a00 !important;
+  }
+  .token.string,
+  .token.regex {
+    color: #00639e !important;
+  }
+}

@@ -1,0 +1,27 @@
+# Intranet VM deployment (NFR-7).  docker compose -f deploy/docker-compose.yml up -d
+# Put an internal reverse proxy / ALB with TLS in front, or mount certs and set TLS_CERT/TLS_KEY.
+services:
+  devtoolkit:
+    image: devtoolkit:latest
+    build: ..
+    ports:
+      - "8080:8080"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      # A01: restrict to corporate ranges (edit to match your network)
+      ALLOW_CIDRS: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1/32"
+      # TLS_CERT: /certs/tls.crt
+      # TLS_KEY: /certs/tls.key
+    # volumes:
+    #   - ./certs:/certs:ro
+    read_only: true            # A05: read-only container filesystem
+    tmpfs:
+      - /tmp:size=256m          # PDF jobs (Phase 2) work in memory/tmpfs only
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    cpus: 1.0
+    restart: unless-stopped
+    # A10: no outbound internet is needed. On Docker, use an internal network or host firewall rules to block egress.

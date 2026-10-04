@@ -1,0 +1,7 @@
+node_modules
+dist
+release
+coverage
+.git
+tests/e2e/screenshots
+*.log

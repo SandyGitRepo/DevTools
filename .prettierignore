@@ -1,0 +1,7 @@
+dist
+release
+node_modules
+docs/requirements.md
+*.pem
+public/pdfjs
+content/**/*.md
